@@ -1,15 +1,14 @@
 #define SRCLK (5)
 #define RCLK (6)
-#define SER (7)
+#define SER (8)
 
+int printnumber = 0;
 
-void setup() {
-  pinMode(SRCLK, OUTPUT);
-  pinMode(RCLK,  OUTPUT);
-  pinMode(SER,   OUTPUT);
-}
+volatile const int InterruptUp = 4;
+volatile const int InterruptDown = 0;
 
 // 点灯パターン(1=点灯)
+
 const uint8_t PATTERNS[] = {
   0b11111100, // 0
   0b01100000, // 1
@@ -23,17 +22,43 @@ const uint8_t PATTERNS[] = {
   0b11110110, // 9
 };
 
+void setup() {
+  pinMode(SRCLK, OUTPUT);
+  pinMode(RCLK,  OUTPUT);
+  pinMode(SER,   OUTPUT);
+  Serial.begin(9600);
+}
+
+
 void loop() {
   
-  int max_pattern = sizeof(PATTERNS)/sizeof(PATTERNS[0]);
-  for (uint8_t i=0; i<max_pattern; i++) {
+//  int max_pattern = sizeof(PATTERNS)/sizeof(PATTERNS[0]);
+  
+  Serial.println(digitalRead(7));
+  Serial.println(digitalRead(3));
+
+  attachInterrupt(digitalPinToInterrupt(InterruptUp), countUp(), HIGH);
+  attachInterrupt(digitalPinToInterrupt(InterruptDown), countDown(), HIGH); 
+  
+  //for (uint8_t i=0; i<max_pattern; i++) {
     // 8ビット分のデータをシフトレジスタへ送る
-    shiftOut(SER, SRCLK, LSBFIRST, PATTERNS[i]); 
+    shiftOut(SER, SRCLK, LSBFIRST, PATTERNS[printnumber]); 
 
     // シフトレジスタの状態をストアレジスタへ反映させる
     digitalWrite(RCLK,  LOW);
     digitalWrite(RCLK,  HIGH);
 
-    delay(200);
-  }
+    delay(100);
+  //}
+}
+
+void countUp(){
+    Serial.print("Up");
+    printnumber += 1;
+    if(printnumber > 9) printnumber = 0;
+}
+
+void countDown(){
+    printnumber -= 1;
+    if(printnumber < 0) printnumber = 9;
 }
