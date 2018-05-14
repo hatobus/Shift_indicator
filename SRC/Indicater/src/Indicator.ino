@@ -44,7 +44,12 @@ void setup(){
     pinMode(RCLK, OUTPUT);
     pinMode(SER, OUTPUT);
 
-    Init();
+    onInitialise();
+
+    shiftOut(SER, SRCLK, LSBFIRST, 0b00000000);
+    digitalWrite(RCLK, LOW);
+    digitalWrite(RCLK, HIGH);
+    delay(200);
 }
 
 void loop(){
@@ -59,16 +64,36 @@ void Ltika(){
     }
 }
 
-void Init(){
-    char uint8_t highpin = 0b00000000;
-    for(int i = 0; i < 8; i++){
-        shiftOut(SER, SRCLK, LSBFIRST, highpin);
-        
+void onInitialise(){
+    
+    uint8_t led = 0b00000010;
+    uint8_t ledmax = 0b10000000;
+    int i = 0;
+
+    for(int i = 0; i < 2; i++){
+        shiftOut(SER, SRCLK, LSBFIRST, 0b00000001);
         digitalWrite(RCLK, LOW);
         digitalWrite(RCLK, HIGH);
-
-        delay(100);
-        highpin++;
+        delay(250);
+        shiftOut(SER, SRCLK, LSBFIRST, 0b00000000);
+        digitalWrite(RCLK, LOW);
+        digitalWrite(RCLK, HIGH);
+        delay(250);
     }
-    delay(10);
+
+    while(i < 2){
+        rollLED(led, ledmax);
+        i++;
+    }
+
+}
+
+void rollLED(uint8_t led, uint8_t ledmax){
+    while(led < ledmax){ 
+        led = led << 1;
+        shiftOut(SER, SRCLK, LSBFIRST, led);
+        digitalWrite(RCLK, LOW);
+        digitalWrite(RCLK, HIGH);
+        delay(100);
+    }
 }
