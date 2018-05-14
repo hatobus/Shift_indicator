@@ -39,6 +39,21 @@ void loop(){
         i++;
     }
 
+    shiftOut(SER, SRCLK, LSBFIRST, 0b00000000);
+    digitalWrite(RCLK, LOW);
+    digitalWrite(RCLK, HIGH);
+    delay(200);
+
+    for(int i = 0; i < 3; i++){
+        shiftOut(SER, SRCLK, LSBFIRST, 0b11111110);
+        digitalWrite(RCLK, LOW);
+        digitalWrite(RCLK, HIGH);
+        delay(250);
+        shiftOut(SER, SRCLK, LSBFIRST, 0b00000000);
+        digitalWrite(RCLK, LOW);
+        digitalWrite(RCLK, HIGH);
+        delay(250);
+    }
 }
 
 void rollLED(uint8_t led, uint8_t ledmax){
