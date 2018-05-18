@@ -1,3 +1,5 @@
+#include<QTRSensors.h>
+
 #define gear1 9
 #define gear2 10
 #define gear3 18
@@ -15,7 +17,7 @@
 
 #define LEDPIN 4
 
-QTRSensorsRC qtrrc((unsigned char[]){9, 10, 18, 19, 20, 21}, NUM_SENSORS, TIMEOUT, EMITTER); 
+QTRSensorsRC qtrrc((unsigned char[]) {9, 10, 18, 19, 20, 21}, NUM_SENSORS, TIMEOUT, EMITTER); 
 unsigned int sensorValues[NUM_SENSORS];
 
 const uint8_t SHIFT_PATTERNS[] = {
@@ -26,19 +28,18 @@ const uint8_t SHIFT_PATTERNS[] = {
     0b01100110, // 4
     0b10110110, // 5
     0b11101110  // R
-}
+};
 
 void setup(){
-    delay(100);
-    
     pinMode(LEDPIN, OUTPUT);
     Ltika();
     
     Serial.begin(9600);
 
-    for(int i = 0; i < 400; i++) 
-        qtrrc.callibrate();
-
+    for(int i = 0; i < 200; i++){
+        qtrrc.calibrate();
+        delay(20);
+    }
 
     pinMode(SRCLK, OUTPUT);
     pinMode(RCLK, OUTPUT);
@@ -50,9 +51,27 @@ void setup(){
     digitalWrite(RCLK, LOW);
     digitalWrite(RCLK, HIGH);
     delay(200);
+
+    for (int i = 0; i < NUM_SENSORS; i++){
+        Serial.print(qtrrc.calibratedMinimumOn[i]);
+        Serial.print(' ');
+    }
+    
+    Serial.println();
+    
+    for (int i = 0; i < NUM_SENSORS; i++){
+        Serial.print(qtrrc.calibratedMaximumOn[i]);
+        Serial.print(' ');
+    }
+    
+    Serial.println();
+    Serial.println();
+    delay(100);
+
 }
 
 void loop(){
+    Serial.println("Start");
 }
 
 void Ltika(){
@@ -60,7 +79,7 @@ void Ltika(){
         digitalWrite(LEDPIN, HIGH);
         delay(500);
         digitalWrite(LEDPIN, LOW);
-        delay(100);}
+        delay(100);
     }
 }
 
