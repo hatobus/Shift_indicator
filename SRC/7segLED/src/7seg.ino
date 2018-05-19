@@ -31,7 +31,7 @@ void setup() {
 
 
 void loop() {
-  
+  Serial.println("Start");  
 //  int max_pattern = sizeof(PATTERNS)/sizeof(PATTERNS[0]);
   
   Serial.println(digitalRead(7));
