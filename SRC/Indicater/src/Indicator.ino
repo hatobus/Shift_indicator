@@ -1,24 +1,19 @@
-#include<QTRSensors.h>
+#define gear1 0 // pin18
+#define gear2 1 // pin19
+#define gear3 2 // pin20
+#define gear4 3 // pin21
+#define gear5 10 // pin10
+#define gear6 6 // pin4
 
-#define gear1 9
-#define gear2 10
-#define gear3 18
-#define gear4 19
-#define gear5 20
-#define gear6 21 // R
-
-#define SRCLK 6
-#define RCLK 7
+#define SRCLK 5
+#define RCLK 6
 #define SER 8
 
-#define NUM_SENSORS 6
-#define TIMEOUT 100
-#define EMITTER 5
+#define NUM_OF_GEAR 6
 
 #define LEDPIN 4
 
-QTRSensorsRC qtrrc((unsigned char[]) {9, 10, 18, 19, 20, 21}, NUM_SENSORS, TIMEOUT, EMITTER); 
-unsigned int sensorValues[NUM_SENSORS];
+const int geatList[] = {gear1, gear2, gear3, gear4, gear5};
 
 const uint8_t SHIFT_PATTERNS[] = {
     0b11111100, // 0 -> N
@@ -30,16 +25,14 @@ const uint8_t SHIFT_PATTERNS[] = {
     0b11101110  // R
 };
 
+int val;
+int isin;
+
 void setup(){
     pinMode(LEDPIN, OUTPUT);
     Ltika();
     
     Serial.begin(9600);
-
-    for(int i = 0; i < 200; i++){
-        qtrrc.calibrate();
-        delay(20);
-    }
 
     pinMode(SRCLK, OUTPUT);
     pinMode(RCLK, OUTPUT);
@@ -52,29 +45,21 @@ void setup(){
     digitalWrite(RCLK, HIGH);
     delay(200);
 
-    for (int i = 0; i < NUM_SENSORS; i++){
-        Serial.print(qtrrc.calibratedMinimumOn[i]);
-        Serial.print(' ');
-    }
-    
-    Serial.println();
-    
-    for (int i = 0; i < NUM_SENSORS; i++){
-        Serial.print(qtrrc.calibratedMaximumOn[i]);
-        Serial.print(' ');
-    }
-    
-    Serial.println();
-    Serial.println();
-    delay(100);
-
 }
 
 void loop(){
-    Serial.println("Start");
+    val = analogRead(gear1);
+    Serial.println(val);
+
+    isin = val >> 9;
+
+    printStatus(SHIFT_PATTERNS[isin]);
+    Serial.println(isin);
+    delay(50);
 }
 
 void Ltika(){
+    // 確認用コード
     for(int i = 0; i < 5; i++){
         digitalWrite(LEDPIN, HIGH);
         delay(500);
@@ -85,6 +70,9 @@ void Ltika(){
 
 void onInitialise(){
     
+    // シフトインジケータの初期化処理
+    // 小数点の部分を二回点滅させて、バーを二回回す
+
     uint8_t led = 0b00000010;
     uint8_t ledmax = 0b10000000;
     int i = 0;
@@ -108,6 +96,12 @@ void onInitialise(){
 }
 
 void rollLED(uint8_t led, uint8_t ledmax){
+    
+    // 光のバーを回すところ
+    // F -> E -> D -> C -> B -> A
+    // の順で点灯させていくと光のバーが回転しているようになる。
+    // いずれはもうちょっとかっこよくしたい
+
     while(led < ledmax){ 
         led = led << 1;
         shiftOut(SER, SRCLK, LSBFIRST, led);
@@ -115,4 +109,14 @@ void rollLED(uint8_t led, uint8_t ledmax){
         digitalWrite(RCLK, HIGH);
         delay(100);
     }
+}
+
+void printStatus(uint8_t now_gear){
+    
+    // 現在のギアの位置に合わせてセグメントLEDに表示する
+    shiftOut(SER, SRCLK, LSBFIRST, now_gear);
+    digitalWrite(RCLK, LOW);
+    digitalWrite(RCLK, HIGH);
+    delay(50);
+
 }
