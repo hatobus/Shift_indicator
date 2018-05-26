@@ -13,7 +13,7 @@
 
 #define LEDPIN 4
 
-const int geatList[] = {gear1, gear2, gear3, gear4, gear5};
+const int gearList[] = {gear1, gear2, gear3, gear4, gear5};
 
 const uint8_t SHIFT_PATTERNS[] = {
     0b11111100, // 0 -> N
@@ -48,13 +48,22 @@ void setup(){
 }
 
 void loop(){
-    val = analogRead(gear1);
-    Serial.println(val);
+    int isN=1;
+    for(int x : gearList){
 
-    isin = val >> 9;
+        val = analogRead(gear1);
+        Serial.println(val);
+        isin = val >> 9;
+        Serial.println(isin);
+        
+        if(isin == 1)
+            printStatus(SHIFT_PATTERNS[isin]);
+            isN = 0;
+    }
+    
+    // どこにもギアが入ってないときはニュートラル -> 0
+    if(isN) printStatus(SHIFT_PATTERNS[0]);
 
-    printStatus(SHIFT_PATTERNS[isin]);
-    Serial.println(isin);
     delay(50);
 }
 
